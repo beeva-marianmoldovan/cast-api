@@ -3,7 +3,7 @@
 var _ = require('lodash');
 var mdns = require('mdns-js');
 var Client                = require('castv2-client').Client;
-var Youtube               = require('castv2-youtube').Youtube;
+var Youtube               = require('youtube-castv2-client').Youtube;
 var Web                   = require('castv2-web').Web;
 var DefaultMediaReceiver  = require('castv2-client').DefaultMediaReceiver;
 
@@ -13,21 +13,27 @@ var curatedDevices = [];
 var browser = mdns.createBrowser('_googlecast._tcp');
 
 browser.once('ready', function () {
-  console.log('ready');
-    browser.discover();
+  browser.discover();
 });
 
 browser.on('update', function (data) {
-    if(!devices[data.addresses[0]] && data.type[0].name === 'googlecast'){
-      devices[data.addresses[0]] = data;
-      var newDevice = _.pick(data, ['host', 'port']);
-      newDevice['address'] = data.addresses[0];
-      if(data['host']){
-        newDevice['name'] =  data['host'].replace('.local','');
-        curatedDevices.push(newDevice);
-      }
+  if(!devices[data.addresses[0]] && getValueFromArray('ca', data.txt) === '4101'){
+    devices[data.addresses[0]] = data;
+    var newDevice = _.pick(data, ['host', 'port']);
+    newDevice['address'] = data.addresses[0];
+    if(data['host']){
+      newDevice['name'] =  getValueFromArray('fn', data.txt);
+      curatedDevices.push(newDevice);
     }
+  }
 });
+
+function getValueFromArray(key, list){
+  for(var index in list){
+    var value = list[index];
+    if(value.startsWith(key)) return value.substr(3);
+  }
+}
 
 exports.findDevices = function(callback){
   callback(curatedDevices);
@@ -48,7 +54,6 @@ exports.setContent = function setContent(content){
     client.connect(item.address, function() {
       launchPlayer(client, content);
       client.on('error', function(err) {
-        console.log('Error: %s', err.message);
         client.close();
       });
     });
@@ -56,14 +61,11 @@ exports.setContent = function setContent(content){
 }
 
 function launchPlayer(client, content){
-  console.log(content);
   if(content.type === 'image' || content.type === 'video')
     launchDefaultMediaPlayer(client, content);
   else if(content.type === 'youtube')
     launchYoutube(client, content);
-  else if(content.type === 'web')
-    launchWeb(client, content);
-  else launchDefaultMediaPlayer(client, {'content': 'http://i.imgur.com/Ql6Dvqa.gif'});
+  else launchWeb(client, content);
 }
 
 function launchWeb(client, content){
@@ -73,9 +75,8 @@ function launchWeb(client, content){
 }
 
 function launchYoutube(client, content){
-  content.content = 'https://www.youtube.com/embed/' + youtube_parser(content.content) + '?autoplay=1&controls=0&modestbranding=1&iv_load_policy=3&loop=1';
-  client.launch(Web, function(err, manager) {
-    manager.load(content.content);
+  client.launch(Youtube, function(err, manager) {
+    manager.load(youtube_parser(content.content));
   });
 }
 

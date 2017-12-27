@@ -23,8 +23,11 @@
     "castv2-youtube": "0.0.2",
     "express": "^4.14.0",
     "google": "^2.1.0",
+    "install": "^0.10.2",
     "lodash": "^4.15.0",
-    "mdns-js": "^0.5.0"
+    "mdns-js": "^0.5.0",
+    "npm": "^5.6.0",
+    "youtube-castv2-client": "git+https://github.com/kopiro/youtube-castv2-client.git"
   },
   "devDependencies": {},
   "description": ""
