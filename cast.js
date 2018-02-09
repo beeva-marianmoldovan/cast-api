@@ -70,13 +70,17 @@ function launchPlayer(client, content){
 
 function launchWeb(client, content){
   client.launch(Web, function(err, manager) {
-    manager.load(content.content);
+    if (!err) {
+      manager.load(content.content);
+    }
   });
 }
 
 function launchYoutube(client, content){
   client.launch(Youtube, function(err, manager) {
-    manager.load(youtube_parser(content.content));
+    if (!err) {
+      manager.load(youtube_parser(content.content));
+    }
   });
 }
 
@@ -101,12 +105,15 @@ function launchDefaultMediaPlayer(client, content){
         ]
       }
     };
-    player.on('status', function(status) {
-      console.log('status broadcast playerState=%s', status.playerState);
-    });
+    
+    if (!err) {
+      player.on('status', function(status) {
+        console.log('status broadcast playerState=%s', status.playerState);
+      });
 
-    player.load(media, { autoplay: true, loop: 1  }, function(err, status) {
-      console.log('media loaded playerState=%s', err, status);
-    });
+      player.load(media, { autoplay: true, loop: 1  }, function(err, status) {
+        console.log('media loaded playerState=%s', err, status);
+      });
+    }
   });
 }
