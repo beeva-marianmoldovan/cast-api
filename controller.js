@@ -3,12 +3,18 @@
 var cast = require('./cast');
 
 exports.screens = function(req, res) {
-  cast.findDevices(function(devices){
-    res.send(devices);
-  })
+  var returnedDevices = cast.findDevices().map(function(item) {
+    return {
+      'address': item.address,
+      'name': item.name,
+      'host': item.host,
+      'port': item.port
+    }
+  });
+
+  res.json(returnedDevices);
 }
 
 exports.content = function(req, res) {
-  cast.setContent(req.body);
-  res.sendStatus(200);
+  cast.setContent(req, res);
 }
